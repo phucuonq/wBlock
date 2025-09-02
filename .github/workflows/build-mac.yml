@@ -1,5 +1,6 @@
-name: Build wBlock macOS App
+name: Build wBlock Mac App
 
+# Trigger workflow khi push vào main hoặc chạy thủ công
 on:
   push:
     branches:
@@ -11,14 +12,17 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Set up Xcode (version mới nhất có sẵn)
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v3
         with:
-          xcode-version: '15.1'
+          xcode-version: '15.1'  # Chỉnh theo version bạn muốn
 
+      # 3️⃣ Cài CocoaPods nếu có Podfile
       - name: Install CocoaPods
         run: |
           if [ -f Podfile ]; then
@@ -26,6 +30,7 @@ jobs:
             pod install
           fi
 
+      # 4️⃣ Build project Release
       - name: Build wBlock macOS app
         run: |
           xcodebuild \
@@ -34,12 +39,14 @@ jobs:
             -configuration Release \
             -derivedDataPath build
 
+      # 5️⃣ Đóng gói .app thành zip
       - name: Package app into zip
         run: |
           cd build/Build/Products/Release
           zip -r wBlock-mac.zip wBlock.app
         shell: bash
 
+      # 6️⃣ Upload artifact (dùng version mới)
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
