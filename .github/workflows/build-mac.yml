@@ -1,0 +1,47 @@
+name: Build wBlock macOS App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v2
+        with:
+          xcode-version: '15.1'
+
+      - name: Install CocoaPods
+        run: |
+          if [ -f Podfile ]; then
+            sudo gem install cocoapods
+            pod install
+          fi
+
+      - name: Build wBlock macOS app
+        run: |
+          xcodebuild \
+            -workspace wBlock.xcworkspace \
+            -scheme wBlock-mac \
+            -configuration Release \
+            -derivedDataPath build
+
+      - name: Package app into zip
+        run: |
+          cd build/Build/Products/Release
+          zip -r wBlock-mac.zip wBlock.app
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: wBlock-mac
+          path: build/Build/Products/Release/wBlock-mac.zip
